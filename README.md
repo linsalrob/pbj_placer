@@ -22,7 +22,8 @@ Moreover, we have used a couple of heuristics that may confuse you. Notably, a s
 ## How do I cite pbj_placer?
 
 First, make sure you cite [phylosift](https://www.ncbi.nlm.nih.gov/pubmed/24482762), [pplacer](https://www.ncbi.nlm.nih.gov/pubmed/21034504), and any other software you use. 
-If you really want to cite us, you can cite pbj_placer as *Doane, MP and Edwards, RA. PBJ_PLACER: reformatting probabilistic trees. DOI:*
+If you really want to cite us, you can cite pbj_placer as *Doane, MP and Edwards, RA. PBJ_PLACER: reformatting probabilistic trees. DOI: 10.5281/zenodo.1312078* 
+[![DOI](https://zenodo.org/badge/140918593.svg)](https://zenodo.org/badge/latestdoi/140918593)
 
 ## Who do I thank for pbj_placer?
 
