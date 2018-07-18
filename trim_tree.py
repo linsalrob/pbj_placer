@@ -48,7 +48,7 @@ def write_tree(tree, outputf):
     tree.write(outfile=outputf, format=1)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="trim tree", required=True)
+    parser = argparse.ArgumentParser(description="trim tree")
     parser.add_argument('-t', help='tree file to trim', required=True)
     parser.add_argument('-p', help='phylogenetic level to trim at', required=True)
     parser.add_argument('-o', help='output tree to write')
