@@ -7,6 +7,8 @@ import sys
 import argparse
 from ete3 import Tree
 
+global tag 
+
 def load_jplacer(jpf):
     """
     lo   ad the jplacer file and return the tree
@@ -20,8 +22,12 @@ def load_jplacer(jpf):
 
     return tree
 
-def is_leaf_node(node, tag):
-    return tag in node.name
+def is_leaf_node(node):
+    global tag
+    if tag in node.name:
+        return True
+    else:
+        return False
 
 
 def write_leaves(tree, outputf):
@@ -61,6 +67,8 @@ if __name__ == '__main__':
         tree = load_jplacer(args.t)
     else:
         tree = Tree(args.t, quoted_node_names=True, format=1)
+
+    tag = "r_{}".format(args.p)
 
     trimmed = Tree( tree.write(is_leaf_fn=is_leaf_node) )
 
