@@ -11,13 +11,11 @@ onto trees and output a probabilistic description of where a read should appear 
 is that it is not compatible with a lot of common phylogenetic software. We have written pbj_placer to rewrite the format, and to create additional
 files that can be used to decorate those phylogenetic trees. This allows complex data sets to be visualized in, for example, [ITOL](https://itol.embl.de).
 
-## Why should you _not_ use this code?
+## What does pbj_placer do?
 
-There are a lot of compelling reasons why pplacer, phylosift, _et al_. do not write out phylogenetic trees. Mainly, they are mapping reads to the tree, 
-which is an inexact science, and the locations of the reads maybe ambiguous. If at all possible, you should use the original _jplace_ output format file
-as that contains more information.
-
-Moreover, we have used a couple of heuristics that may confuse you. Notably, a single sequence can appear more than once in a tree!
+We parse out the sequences that should be placed onto the tree, and write them and the tree to separate files.
+We then read a user-provided config file that explains what each sample is. By matching reads -> fastq files -> samples,
+we generate input files that you put into ITOL.
 
 ## How do I cite pbj_placer?
 
@@ -43,7 +41,7 @@ Before we begin, we need a few things ready to go:
 
 We will output several files that you can import into [itol](https://itol.embl.de)
 
-- a newick file with just the tree, with the metagenomes integrated into the leaves. Note that the tree is rerooted
+- a newick file with just the reference tree used by phylosift. Note that the tree is rerooted
 so that the root is between Archaea and Bacteria or Archaea and Eukarya (depending exactly on the topology of your tree
 and where the shared nodes are)
 - colorstrip files: These files make the strips around the outside of the images.
@@ -55,19 +53,18 @@ and where the shared nodes are)
 
 
 
-## Step one, integrate the leaves into the tree
+## Step one, separate the metagenomes and the tree
 
-In this step, we read the jplacer file and integrate the metagenomes into the tree. We specifically place ambiquous
-sequences at each point where they could occur. We realize that this is not correct, _sensu stricto_, but for the 
-visualization it provides us what we need. 
+In this step, we read the jplacer file and separate out the metagenomes from the tree. 
 
 Use the command:
+
 ```
-python3 parse_rename_write.py -j sharks_stingray.jplace -o sharks_stingray.nwk -l sharks_stingray.leaves
+python3 rename_tree_leaves.py -j sharks_stingray.jplace -o sharks_stingray.nwk -m sharks_stingray.placements
 ```
 
-to parse the jplace file and create (a) the tree for itol (sharks_fish.nwk), and (b) a list of all the leaves
-(sharks_fish.leaves) that we will use in subsequent commands.
+to parse the jplace file and create (a) the tree for itol (sharks_stingray.nwk), and (b) a list of all the metagenome reads
+and the positions those mapto the tree (sharks_stingray.placements) that we will use in subsequent commands.
 
 ## Step two, create our classifications
 
@@ -90,7 +87,7 @@ We generate a file that has all the leaves found in the tree, including the refe
 bacteria, archaea, eukarya, or from your metagenomes. We also append all the classification information you provide.
 
 ```
-python3 fastq2ids.py -l sharks_stingray.leaves -c ../fastq_classification.tsv -d ../fastq -o sharks_stingray.leaves.labels
+python3 fastq2ids.py -l sharks_stingray.leaves -p -c ../fastq_classification.tsv -d ../fastq -o sharks_stingray.leaves.labels
 ```
 
 ## Step three, create color strips for different taxonomic levels
