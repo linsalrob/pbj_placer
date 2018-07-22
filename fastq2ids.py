@@ -1,6 +1,6 @@
 """
 Given a directory of fastq files, a classification file that describes what the fastq files are,
-and a tree where the leaves have been placed into the tree (i.e. from parse_rename_write.py)
+and a tree where the leaves have been placed into the tree (i.e. from parse_rename_write.py) or a file of ids from rename_tree_leaves.py
 we make a file that has [id, domain, type, source]
 """
 
@@ -108,11 +108,31 @@ def determine_phylogeny(fn, fqids, verbose=False):
         t,n = get_taxonomy(t.parent, c)
     return n.scientific_name, fn, None
 
+def read_leaves(leaff, twocol, verbose=False):
+    """
+    Read the leaves file and return a set of leaves
+    :param leaff: The leaves file
+    :param twocol: Whether to read the second col (e.g. if it is from rename_tree_leaves)
+    :param verbose: more output
+    :return:
+    """
 
-def write_output(leaff, fqfiles, classifile, readdeff, verbose=False):
+    leaves = set()
+    with open(leaff, 'r') as f:
+        for l in f:
+            if twocol:
+                p = l.strip().split('\t')
+                leaves.update(p[1])
+            else:
+                leaves.update(l.strip())
+
+    return leaves
+
+
+def write_output(leaves, fqfiles, classifile, readdeff, verbose=False):
     """
     Write an output file that categorizes each leaf
-    :param leaff: the leaves file
+    :param leaves: the tree leaves
     :param fqfiles: the list of fastq files
     :param classifile: the classification file
     :param readdeff: read definition file to write
@@ -126,28 +146,29 @@ def write_output(leaff, fqfiles, classifile, readdeff, verbose=False):
     stypes = set()
     if verbose:
         sys.stderr.write("Determining phylogeny for all leaves\n")
-    with open(leaff, 'r') as f:
-        with open(readdeff, 'w') as readout:
-            for l in f:
-                l = l.strip()
-                dom, id_in_fq, nm = determine_phylogeny(l, fqids, verbose)
-                if nm:
-                    # this also means that l is in fqids, so we can get the classification
-                    thisfq = fqids[id_in_fq]
-                    clstr=""
-                    if thisfq not in cl:
-                        sys.stderr.write(f"ERROR: {thisfq} not found in the fastq classification file\n")
-                    else:
-                        clstr = cl[thisfq]
-                    readout.write("{}\t{}\t{}\t{}\t{}\n".format(l, id_in_fq, dom, nm, clstr))
+
+    with open(readdeff, 'w') as readout:
+        for l in leaves:
+            l = l.strip()
+            dom, id_in_fq, nm = determine_phylogeny(l, fqids, verbose)
+            if nm:
+                # this also means that l is in fqids, so we can get the classification
+                thisfq = fqids[id_in_fq]
+                clstr=""
+                if thisfq not in cl:
+                    sys.stderr.write(f"ERROR: {thisfq} not found in the fastq classification file\n")
                 else:
-                    readout.write("{}\t{}\t{}\n".format(l, l, dom))
+                    clstr = cl[thisfq]
+                readout.write("{}\t{}\t{}\t{}\t{}\n".format(l, id_in_fq, dom, nm, clstr))
+            else:
+                readout.write("{}\t{}\t{}\n".format(l, l, dom))
 
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Color a list of metagenomes')
     parser.add_argument('-l', help='leaves list file', required=True)
+    parser.add_argument('-p', help='leaves list file is from rename_tree_leaves, so look at the second column', action='store_true')
     parser.add_argument('-c', help='fastq classification file', required=True)
     parser.add_argument('-d', help='directory of fastq files')
     parser.add_argument('-f', help='fastq file(s) [one or more can be specified]', action='append')
@@ -166,4 +187,6 @@ if __name__ == '__main__':
         sys.stderr.write("You must supply some fastq files with either -d (directory) or -f (files)\n")
         sys.exit(-1)
 
-    write_output(args.l, fqfiles, args.c, args.o, args.v)
+    leaves = read_leaves(args.l, args.p)
+
+    write_output(leaves, fqfiles, args.c, args.o, args.v)
