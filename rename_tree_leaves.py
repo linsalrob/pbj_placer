@@ -45,7 +45,12 @@ def parse_jplacer_tree(data):
 
 def rename_nodes_ncbi(tree, verbose=False):
     """
-    Rename the nodes based on everything below me
+    Rename the nodes based on everything below me, but also give each node a unique branch number.
+    The format of this number is _b\d+
+
+    :param tree: the tree to rename
+    :param verbose: more output
+    :return: the renamed tree
     """
 
     # connect to the SQL dataabase
@@ -75,6 +80,7 @@ def rename_nodes_ncbi(tree, verbose=False):
     # unique name for the node!
     if verbose:
         sys.stderr.write("Traversing the tree to rename the nodes\n")
+    branchnum = 0
     for n in tree.traverse("preorder"):
         if n.is_leaf():
             continue
@@ -88,11 +94,12 @@ def rename_nodes_ncbi(tree, verbose=False):
         # which is the LOWEST level with a single taxonomy
         for w in wanted_levels:
             if len(taxs[w]) == 1:
-                newname = "{} r_{}".format(taxs[w].pop(), w)
+                newname = "{} r_{} b_{}".format(taxs[w].pop(), w, branchnum)
                 if verbose:
                     sys.stderr.write("Changing name from: {} to {}\n".format(n.name, newname))
                 n.name = newname
                 break
+        branchnum += 1
     return tree
 
 def reroot_tree(tree, verbose=False):
@@ -209,7 +216,7 @@ def write_placement_tuples(pl, tree, tpoutfile, verbose=False):
 
             if thisid in pl:
                 for p in pl[thisid]:
-                    out.write("{}\t{}\n".format(t.name, p))
+                    out.write("{}\t{}\n".format(clean_newick_id(t.name), p))
 
 def write_tree(tree, outputf):
     """
