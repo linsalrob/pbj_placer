@@ -154,6 +154,8 @@ def clean_newick_id(name):
     """
     name = name.replace(' ', '_')
     name = name.replace(':', '_')
+    name = name.replace('[', '_')
+    name = name.replace(']', '_')
 
     return name
 
