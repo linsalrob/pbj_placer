@@ -126,9 +126,9 @@ def read_leaves(leaff, twocol, verbose=False):
         for l in f:
             if twocol:
                 p = l.strip().split('\t')
-                leaves.update(p[1])
+                leaves.add(p[1])
             else:
-                leaves.update(l.strip())
+                leaves.add(l.strip())
     if verbose:
         sys.stderr.write("............ Done\n")
 
