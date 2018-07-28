@@ -63,7 +63,8 @@ def fq_classification(fqclass, verbose=False):
             p = l.strip().split("\t")
             if len(p) > maxlen:
                 maxlen = len(p) - 1
-            classi[p[0]] = p[1:]
+            fname = p[0].split(os.path.sep)[-1]
+            classi[fname] = p[1:]
 
     for i in classi:
         while len(classi[i]) < maxlen:
@@ -118,7 +119,8 @@ def read_leaves(leaff, twocol, verbose=False):
     :param verbose: more output
     :return:
     """
-
+    if verbose:
+        sys.stderr.write("Reading leaves\n")
     leaves = set()
     with open(leaff, 'r') as f:
         for l in f:
@@ -127,6 +129,11 @@ def read_leaves(leaff, twocol, verbose=False):
                 leaves.update(p[1])
             else:
                 leaves.update(l.strip())
+    if verbose:
+        sys.stderr.write("............ Done\n")
+
+    for l in leaves:
+        sys.stderr.write("{}\t{}\n".format(l, leaves[l]))
 
     return leaves
 
