@@ -148,7 +148,7 @@ def multibar_counts(treefile, data, taxa, proportions, verbose=False):
     return val
 
 
-def write_directory(counts, outputdir, colors, proportions, verbose=False):
+def write_directory(counts, outputdir, colors, proportions, usemaxval=False, verbose=False):
     """
     Write a directory with one multibar file per type
     :param counts: the dict of dicts. The first key is the shark type, the second the genus/species
@@ -168,10 +168,11 @@ def write_directory(counts, outputdir, colors, proportions, verbose=False):
 
     # what is our maxvalue
     maxval = 50
-    for k in counts:
-        m = max(counts[k].values())
-        if m > maxval:
-            maxval = m
+    if usemaxval:
+        for k in counts:
+            m = max(counts[k].values())
+            if m > maxval:
+                maxval = m
 
 
     if not os.path.exists(outputdir):
@@ -246,6 +247,7 @@ if __name__ == '__main__':
     parser.add_argument('-x', help='taxa to use for the labels', required=True)
     parser.add_argument('-p', help='Display proportion of counts not counts', action='store_true')
     parser.add_argument('-c', help='Colors to use. These will be prepended to our default list', action='append')
+    parser.add_argument('--maxval', help='Scale based on the maximum value, otherwise all bars are width=50', action='store_true')
     parser.add_argument('-o', help='tsv file to write with all the data')
     parser.add_argument('-v', help='verbose output', action="store_true")
     args = parser.parse_args()
@@ -270,7 +272,7 @@ if __name__ == '__main__':
 
     mbcounts = multibar_counts(args.t, mapdata, taxa, args.p, args.v)
 
-    write_directory(mbcounts, args.d, colors, args.p, args.v)
+    write_directory(mbcounts, args.d, colors, args.p, args.maxval, args.v)
 
     if args.o:
         write_tsv(mbcounts, args.x, args.o, args.v)
