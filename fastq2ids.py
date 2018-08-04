@@ -132,8 +132,6 @@ def read_leaves(leaff, twocol, verbose=False):
     if verbose:
         sys.stderr.write("............ Done\n")
 
-    sys.stderr.write("LEAVES :\n\n{}\n".format("\n".join(leaves)))
-
     return leaves
 
 
