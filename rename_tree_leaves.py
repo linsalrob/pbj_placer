@@ -89,14 +89,14 @@ def rename_nodes_ncbi(tree, verbose=False):
         ## of the leaves.
 
         children = n.get_children()
-        names = set([re.sub('b_\d+', '', x.name) for x in children])
+        names = set([re.sub('\s+b_\d+', '', x.name) for x in children])
         if len(names) == 1:
             n.name = "{} b_{}".format(names.pop(), branchnum)
             if verbose:
                 sys.stderr.write("Reset name to {} because both children are the same\n".format(n.name))
             for c in children:
                 oldname = c.name
-                c.name = re.sub('r_\w+', '', c.name)
+                c.name = re.sub('r_\w+\s+', '', c.name)
                 if verbose:
                     sys.stderr.write("\tAs both children the same set {} to {}\n".format(oldname, c.name))
         else:
