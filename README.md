@@ -1,6 +1,7 @@
 # PB_JPLACER
 
-Rewrite jplacer files produced by pplacer and PhyloSift to make trees that are compatible with ITOL and other tree viewing software.
+Rewrite jplacer files produced by pplacer and PhyloSift to make trees that are compatible with ITOL and other tree 
+viewing software.
 
 ## Why should you use this code?
 
@@ -8,14 +9,15 @@ Rewrite jplacer files produced by pplacer and PhyloSift to make trees that are c
 [pplacer](http://matsen.github.io/pplacer/) and related software like [PhyloSift](https://phylosift.wordpress.com/) don't create trees. They map reads
 onto trees and output a probabilistic description of where a read should appear on a tree. For more information why, take a look at the 
 [pplacer paper](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0031009) that describes the format. The problem with this format
-is that it is not compatible with a lot of common phylogenetic software. We have written pbj_placer to rewrite the format, and to create additional
-files that can be used to decorate those phylogenetic trees. This allows complex data sets to be visualized in, for example, [ITOL](https://itol.embl.de).
+is that it is not compatible with a lot of common phylogenetic software. We have written pbj_placer to reanalyze the tree, add some new nodal information,
+modify the format, and to create additional files that can be used to decorate those phylogenetic trees. 
+This allows complex data sets to be visualized in, for example, [ITOL](https://itol.embl.de).
 
 ## What does pbj_placer do?
 
 We parse out the sequences that should be placed onto the tree, and write them and the tree to separate files.
-We then read a user-provided config file that explains what each sample is. By matching reads -> fastq files -> samples,
-we generate input files that you put into ITOL.
+We then read a user-provided config file that explains what each sample is. By matching reads -> fastq files -> samples
+we generate input files that you put into ITOL to make beautifully decorated trees for your publication.
 
 ## How do I cite pbj_placer?
 
@@ -25,7 +27,7 @@ If you really want to cite us, you can cite pbj_placer as *Doane, MP and Edwards
 
 ## Who do I thank for pbj_placer?
 
-This is experimental code written by Rob Edwards and Mike Doane. You should thank Rob and criticie Mike!
+This is experimental code written by Rob Edwards and Mike Doane. You should thank Rob and criticize Mike!
 
 ### What we need
 
@@ -44,9 +46,6 @@ We will output several files that you can import into [itol](https://itol.embl.d
 - a newick file with just the reference tree used by phylosift. Note that the tree is rerooted
 so that the root is between Archaea and Bacteria or Archaea and Eukarya (depending exactly on the topology of your tree
 and where the shared nodes are)
-- colorstrip files: These files make the strips around the outside of the images.
-  - Kingdom: Whether the sample is from Archaea, Metagenome, Eukaryota, Bacteria, Unknown
-  - Species: this file has all the species in the samples.
 - multibar files:
   - We create a directory with multibars that can either be percentage plots or raw counts.
   - There is one file per sample in the directory, and you can specify the taxonomic levels at which to apply the data.
@@ -55,7 +54,8 @@ and where the shared nodes are)
 
 ## Step one, separate the metagenomes and the tree
 
-In this step, we read the jplacer file and separate out the metagenomes from the tree. 
+In this step, we read the jplacer file and separate out the metagenomes from the tree, rename some of the internal nodes in the tree
+based on the classification of the leaves associated with the nodes.
 
 Use the command:
 
@@ -65,6 +65,10 @@ python3 rename_tree_leaves.py -j sharks_stingray.jplace -o sharks_stingray.nwk -
 
 to parse the jplace file and create (a) the tree for itol (sharks_stingray.nwk), and (b) a list of all the metagenome reads
 and the positions those mapto the tree (sharks_stingray.placements) that we will use in subsequent commands.
+
+This step requires access to the [SQLite3 taxnomy database](https://github.com/linsalrob/EdwardsLab/tree/master/taxon)
+that is an interface to NCBI taxonomy. We use that database to figure out our taxonomic level.
+
 
 ## Step two, create our classifications
 
@@ -90,44 +94,42 @@ bacteria, archaea, eukarya, or from your metagenomes. We also append all the cla
 python3 fastq2ids.py -l sharks_stingray.leaves -p -c ../fastq_classification.tsv -d ../fastq -o sharks_stingray.leaves.labels
 ```
 
-## Step three, create color strips for different taxonomic levels
+This creates a new file that has several columns (depending on exactly how many metadata classes you provide in your
+fastq classification file):
 
-We can create colorstrips for e.g. Bacteria, Archaea, Metagenomes or for Sharks and Fish based on the data in our 
-leaves.labels file that we have just created. e.g. to make a file for the Kingdom, use:
+- The original name of the fastq read
+- The modified name as it appears in the tree (some special characters like : and . are automatically replaced)
+- Whether the read is from a metagenome. This is assumed if it is in a fastq file.
+- Which fastq file the read is found in
+- The classification(s) provided in the classification file for that fastq file.
 
-```
-python3 create_colorstrip.py -f sharks_stingray.leaves.labels -n 2 -l Kingdom -s 1 -o sharks_stingray.kingdom.colorstrip
-```
+Basically, we're mapping leaves in the tree to reads, and reads to fastq files, and fastq files to their taxonomy.
 
-and to create a similar file for shark or fish, use:
 
-```
-python3 create_colorstrip.py -f sharks_stingray.leaves.labels -n 4 -l "Fish/Shark" -s 2 -o sharks_stingray.fish_shark.colorstrip
-```
+## Step three, count the metagenomes at different levels and create multibars
 
-and to create one for each of the fish/shark species we use:
+We create a directory of output files that you can upload to ITOL. Each of the output files can be dropped onto the tree
+visualization to decorate the tree. There are a couple of labels that are used in ITOL, e.g. for the legend, and 
+we also create the multibar based on the phylogenetic annoations in the tree and the column in the 
+labels file that you are keen to display.
 
-```
-python3 create_colorstrip.py -f sharks_stingray.leaves.labels -n 5 -l Species -s 3 -o sharks_stingray.species.colorstrip
-```
+The multibar counts the occurrences of metagenomes in different samples, and either uses raw counts or normalized
+counts for the display.
 
-or, just do them all at once and output everything to a directory:
+For example, to plot the occurrence of different samples at the class level on the tree, and to separate sharks/stingray/fish
+we use 
+
 ```angular2html
-mkdir colorstrip/
-python3 create_colorstrip.py -f sharks_stingray.leaves.labels -n 2 -l Kingdom -s 1 -o colorstrip/sharks_stingray.kingdom.colorstrip
-python3 create_colorstrip.py -f sharks_stingray.leaves.labels -n 4 -l "Fish/Shark" -s 2 -o colorstrip/sharks_stingray.fish_shark.colorstrip
-python3 create_colorstrip.py -f sharks_stingray.leaves.labels -n 5 -l Species -s 3 -o colorstrip/sharks_stingray.species.colorstrip
+python3 ~redwards/GitHubs/pbj_placer/create_multibar.py -f  sharks_sting_fish.leaves.labels -m sharks_sting_fish.placements -t sharks_sting_fish.nwk -n 4 -x class -d multibar.class.sharkfish -o class.sharkfish.counts.tsv
 ```
 
+If we change the column in the labels file to read (the -n parameter) we can switch from just looking at sharks, stingray,
+and fish to the different species of fish. 
 
-## Step four, count the metagenomes at different levels and create multibars
+````angular2html
+do python3 ~redwards/GitHubs/pbj_placer/create_multibar.py -f  sharks_sting_fish.leaves.labels -m sharks_sting_fish.placements -t sharks_sting_fish.nwk -n 5 -x class -d  multibar.class.counts -o class.counts.tsv
+````
 
-This creates a directory with a file for each of the bars we need to plot. The first command normalizes the data to percentages. The second command gives you raw counts.
-
-```
-python3 create_multibar.py -f sharks_stingray.leaves.labels -t sharks_stingray.nwk -d multibar -n 5 -l Species -x family -s 3 -p
-python3 create_multibar.py -f sharks_stingray.leaves.labels -t sharks_stingray.nwk -d multibarnp -n 5 -l Species -x family -s 3
-```
-
-
+Note that this command also creates a file (the .tsv files) that summarizes the data if you want to bring it into
+a stats program for other analysis.
 
