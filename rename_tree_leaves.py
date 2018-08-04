@@ -81,24 +81,41 @@ def rename_nodes_ncbi(tree, verbose=False):
     if verbose:
         sys.stderr.write("Traversing the tree to rename the nodes\n")
     branchnum = 0
-    for n in tree.traverse("preorder"):
+    for n in tree.traverse("postorder"):
         if n.is_leaf():
             continue
-        taxs = {w: set() for w in wanted_levels}
-        for l in n.get_leaves():
-            if l.name not in taxonomy:
-                continue
-            for w in wanted_levels:
-                if w in taxonomy[l.name]:
-                    taxs[w].add(taxonomy[l.name][w])
-        # which is the LOWEST level with a single taxonomy
-        for w in wanted_levels:
-            if len(taxs[w]) == 1:
-                newname = "{} r_{} b_{}".format(taxs[w].pop(), w, branchnum)
+        ## if both our children have the same name, we acquire that name and reset their names
+        ## otherwise we figure out what our name should be based on the last common ancestor
+        ## of the leaves.
+
+        children = n.get_children()
+        names = set([re.sub('b_\d+', '', x.name) for x in children])
+        if len(names) == 1:
+            n.name = "{} b_{}".format(names.pop(), branchnum)
+            if verbose:
+                sys.stderr.write("Reset name to {} because both children are the same\n".format(n.name))
+            for c in children:
+                oldname = c.name
+                c.name = re.sub('r_\w+', '', c.name)
                 if verbose:
-                    sys.stderr.write("Changing name from: {} to {}\n".format(n.name, newname))
-                n.name = newname
-                break
+                    sys.stderr.write("\tAs both children the same set {} to {}\n".format(oldname, c.name))
+        else:
+            ## We have to figure out what our unique name should be
+            taxs = {w: set() for w in wanted_levels}
+            for l in n.get_leaves():
+                if l.name not in taxonomy:
+                    continue
+                for w in wanted_levels:
+                    if w in taxonomy[l.name]:
+                        taxs[w].add(taxonomy[l.name][w])
+            # which is the LOWEST level with a single taxonomy
+            for w in wanted_levels:
+                if len(taxs[w]) == 1:
+                    newname = "{} r_{} b_{}".format(taxs[w].pop(), w, branchnum)
+                    if verbose:
+                        sys.stderr.write("Changing name from: {} to {}\n".format(n.name, newname))
+                    n.name = newname
+                    break
         branchnum += 1
     return tree
 
