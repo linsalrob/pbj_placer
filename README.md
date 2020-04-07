@@ -21,7 +21,7 @@ This allows complex data sets to be visualized in, for example, [ITOL](https://i
 ## What does pbj_placer do?
 
 We parse out the sequences that should be placed onto the tree, and write them and the tree to separate files.
-We then read a user-provided config file that explains what each sample is. By matching *reads* &#8594 *fastq files* &#8594 *samples*
+We then read a user-provided config file that explains what each sample is. By matching *reads* -> *fastq files* -> *samples*
 we generate input files that you put into ITOL to make beautifully decorated trees for your publication.
 
 ## How do I cite pbj_placer?
