@@ -14,14 +14,14 @@ viewing software.
 [pplacer](http://matsen.github.io/pplacer/) and related software like [PhyloSift](https://phylosift.wordpress.com/) don't create trees. They map reads
 onto trees and output a probabilistic description of where a read should appear on a tree. For more information why, take a look at the 
 [pplacer paper](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0031009) that describes the format. The problem with this format
-is that it is not compatible with a lot of common phylogenetic software. We have written pbj_placer to reanalyze the tree, add some new nodal information,
+is that it is not compatible with a lot of common phylogenetic software. We have written `pbj_placer` to reanalyze the tree, add some new nodal information,
 modify the format, and to create additional files that can be used to decorate those phylogenetic trees. 
 This allows complex data sets to be visualized in, for example, [ITOL](https://itol.embl.de).
 
 ## What does pbj_placer do?
 
 We parse out the sequences that should be placed onto the tree, and write them and the tree to separate files.
-We then read a user-provided config file that explains what each sample is. By matching reads -> fastq files -> samples
+We then read a user-provided config file that explains what each sample is. By matching *reads* &#8594 *fastq files* &#8594 *samples*
 we generate input files that you put into ITOL to make beautifully decorated trees for your publication.
 
 ## How do I cite pbj_placer?
