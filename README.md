@@ -1,3 +1,8 @@
+[![Edwards Lab](https://img.shields.io/badge/Bioinformatics-EdwardsLab-03A9F4)](https://edwards.sdsu.edu/research)
+[![DOI](https://zenodo.org/badge/140918593.svg)](https://zenodo.org/badge/latestdoi/140918593)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
 # PB_JPLACER
 
 Rewrite jplacer files produced by pplacer and PhyloSift to make trees that are compatible with ITOL and other tree viewing software.
@@ -8,13 +13,13 @@ Rewrite jplacer files produced by pplacer and PhyloSift to make trees that are c
 [pplacer](http://matsen.github.io/pplacer/) and related software like [PhyloSift](https://phylosift.wordpress.com/) don't create trees. They map reads
 onto trees and output a probabilistic description of where a read should appear on a tree. For more information why, take a look at the 
 [pplacer paper](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0031009) that describes the format. The problem with this format
-is that it is not compatible with a lot of common phylogenetic software. We have written pbj_placer to rewrite the format, and to create additional
+is that it is not compatible with a lot of common phylogenetic software. We have written `pbj_placer` to rewrite the format, and to create additional
 files that can be used to decorate those phylogenetic trees. This allows complex data sets to be visualized in, for example, [ITOL](https://itol.embl.de).
 
 ## What does pbj_placer do?
 
 We parse out the sequences that should be placed onto the tree, and write them and the tree to separate files.
-We then read a user-provided config file that explains what each sample is. By matching reads -> fastq files -> samples,
+We then read a user-provided config file that explains what each sample is. By matching `reads` -> `fastq files` -> `samples`,
 we generate input files that you put into ITOL.
 
 ## How do I cite pbj_placer?
@@ -33,9 +38,9 @@ Before we begin, we need a few things ready to go:
 
 - a directory of fastq files for your sequences that were used as the input to PhyloSift.
 - a classification file that has the fastq file name and then an arbitrary number of classifications. Each classification should be tab-separated. See below for an example.
-- the jplacer output file from [phylosift](https://github.com/gjospin/PhyloSift)
+- the `jplacer` output file from [phylosift](https://github.com/gjospin/PhyloSift)
 - you will need to install the [NCBI Taxonomy SQLite3 database](https://github.com/linsalrob/EdwardsLab/tree/master/taxon)
-- download pbj_placer by cloning this repository. `git clone https://github.com/linsalrob/pbj_placer.git` should create a new directory with the code for you.
+- download `pbj_placer` by cloning this repository. `git clone https://github.com/linsalrob/pbj_placer.git` should create a new directory with the code for you.
 
 ### What we will produce
 
@@ -55,7 +60,7 @@ and where the shared nodes are)
 
 ## Step one, separate the metagenomes and the tree
 
-In this step, we read the jplacer file and separate out the metagenomes from the tree. 
+In this step, we read the `jplacer` file and separate out the metagenomes from the tree. 
 
 Use the command:
 
@@ -63,8 +68,8 @@ Use the command:
 python3 rename_tree_leaves.py -j sharks_stingray.jplace -o sharks_stingray.nwk -m sharks_stingray.placements
 ```
 
-to parse the jplace file and create (a) the tree for itol (sharks_stingray.nwk), and (b) a list of all the metagenome reads
-and the positions those mapto the tree (sharks_stingray.placements) that we will use in subsequent commands.
+to parse the jplace file and create (a) the tree for itol (`sharks_stingray.nwk`), and (b) a list of all the metagenome reads
+and the positions those mapto the tree (`sharks_stingray.placements`) that we will use in subsequent commands.
 
 ## Step two, create our classifications
 
